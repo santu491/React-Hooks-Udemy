@@ -5,6 +5,7 @@ import IngredintsList from './IngredientList'
 import Search from './Search';
 import LoadingIndicator from '../UI/LoadingIndicator'
 import ErrorModal from '../UI/ErrorModal';
+import useHttp from '../hook/http'
 
 const ingredientReducer = (state, action) => {
   switch (action.type) {
@@ -21,35 +22,35 @@ const ingredientReducer = (state, action) => {
 
 }
 
-const httpReducer = (state, action) => {
-  switch (action.type) {
-    case 'START':
-      return {
-        ...state,
-        loading: true,
-        error: null
-      }
-    case 'SUCCESS':
-      return {
-        ...state,
-        loading: false,
-        error: null
-      }
-    case 'FAIL':
-      return {
-        ...state,
-        loading: true,
-        error: action.error
-      }
-  }
+// const httpReducer = (state, action) => {
+//   switch (action.type) {
+//     case 'START':
+//       return {
+//         ...state,
+//         loading: true,
+//         error: null
+//       }
+//     case 'SUCCESS':
+//       return {
+//         ...state,
+//         loading: false,
+//         error: null
+//       }
+//     case 'FAIL':
+//       return {
+//         ...state,
+//         loading: true,
+//         error: action.error
+//       }
+//   }
 
-}
+// }
 
 function Ingredients() {
   //------------------
   // let [ingredients, setIngredients] = useState([])
-  let [loading, setLoading] = useState(false)
-  let [error, setError] = useState(null)
+  // let [loading, setLoading] = useState(false)
+  // let [error, setError] = useState(null)
   // useEffect(() => {
   //   fetch('https://react-hooks-8f150.firebaseio.com/ingredients.json')
   //     .then((response) => response.json())
@@ -70,80 +71,115 @@ function Ingredients() {
 
   //------------------
 
-  const [ingredients, dispatchIngredients] = useReducer(ingredientReducer, [])
-  const [httpState, dispatchHttp] = useReducer(httpReducer, { error: null, loading: false })
+  // const [ingredients, dispatchIngredients] = useReducer(ingredientReducer, [])
+  // //const [httpState, dispatchHttp] = useReducer(httpReducer, { error: null, loading: false })
+  // const { loading, error, data, sendRequest, identifier, reqExtra, clear } = useHttp()
 
-  const addIngredients = useCallback((ingredients) => {
-    // setLoading(true)
-    dispatchHttp({
-      type: 'START',
-    })
-    fetch('https://react-hooks-8f150.firebaseio.com/ingredients.json', {
-      method: 'POST',
-      body: JSON.stringify(ingredients),
-      headers: { 'Content-Type': 'application/json' }
-    }).then(res => res.json()).then((response) => {
-      // setLoading(false)
-      dispatchHttp({
-        type: 'SUCCESS',
-      })
-      console.log(response)
-      // setIngredients((prevIngredients) => [
-      //   ...prevIngredients,
-      //   { id: response.name, ...ingredients }
-      // ])
+  // const addIngredients = useCallback((ingredients) => {
+  //   // setLoading(true)
+  //   dispatchHttp({
+  //     type: 'START',
+  //   })
+  //   fetch('https://react-hooks-8f150.firebaseio.com/ingredients.json', {
+  //     method: 'POST',
+  //     body: JSON.stringify(ingredients),
+  //     headers: { 'Content-Type': 'application/json' }
+  //   }).then(res => res.json()).then((response) => {
+  //     // setLoading(false)
+  //     dispatchHttp({
+  //       type: 'SUCCESS',
+  //     })
+  //     console.log(response)
+  //     // setIngredients((prevIngredients) => [
+  //     //   ...prevIngredients,
+  //     //   { id: response.name, ...ingredients }
+  //     // ])
+  //     dispatchIngredients({
+  //       type: 'ADD',
+  //       ingredients: {
+  //         id: response.name,
+  //         ...ingredients
+  //       }
+  //     })
+  //   }).catch(error => {
+  //     // setLoading(false)
+  //     // setError(error.message)
+  //     dispatchHttp({
+  //       type: 'FAIL',
+  //       error: error.message
+  //     })
+
+  //   })
+  // }, [])
+
+
+  // const onRemoveItem = useCallback((id) => {
+  //   // setLoading(true)
+  //   dispatchHttp({
+  //     type: 'START',
+  //   })
+  //   fetch(`https://react-hooks-8f150.firebaseio.com/ingredients/${id}.json`, {
+  //     method: 'DELETE',
+  //   }).then(res => res.json())
+  //     .then((response) => {
+  //       // setLoading(false)
+  //       // console.log("del re", response)
+  //       // let updatedIngredients = ingredients.filter(ing => ing.id !== id);
+  //       // setIngredients(updatedIngredients)
+
+  //       dispatchHttp({
+  //         type: 'SUCCESS',
+  //       })
+  //       dispatchIngredients({
+  //         type: 'DELETE',
+  //         ingredientsId: id
+  //       })
+  //     }).catch(error => {
+  //       console.log("error", error)
+  //       // setLoading(false)
+  //       // setError(error.message)
+  //       dispatchHttp({
+  //         type: 'FAIL',
+  //         error: error.message
+  //       })
+  //     })
+
+  // }, [])
+  //------------
+
+  const [ingredients, dispatchIngredients] = useReducer(ingredientReducer, [])
+  //const [httpState, dispatchHttp] = useReducer(httpReducer, { error: null, loading: false })
+  const { loading, error, data, sendRequest, identifier, reqExtra, clear } = useHttp()
+
+  useEffect(() => {
+    if (!loading && !error && identifier === "ADD_ING") {
       dispatchIngredients({
         type: 'ADD',
-        ingredients: {
-          id: response.name,
-          ...ingredients
-        }
+        ingredients: { id: data.name, ...reqExtra }
       })
-    }).catch(error => {
-      // setLoading(false)
-      // setError(error.message)
-      dispatchHttp({
-        type: 'FAIL',
-        error: error.message
+    }
+    if (!loading && !error && identifier === "REMOVE_ING") {
+      dispatchIngredients({
+        type: 'DELETE',
+        ingredientsId: reqExtra
       })
+    }
 
-    })
-  }, [])
+  }, [data, identifier, reqExtra, loading, error])
+
+  const addIngredients = useCallback((ingredients) => {
+    sendRequest('https://react-hooks-8f150.firebaseio.com/ingredients.json', 'POST', JSON.stringify(ingredients), "ADD_ING", ingredients)
+
+  }, [sendRequest])
 
 
   const onRemoveItem = useCallback((id) => {
-    // setLoading(true)
-    dispatchHttp({
-      type: 'START',
-    })
-    fetch(`https://react-hooks-8f150.firebaseio.com/ingredients/${id}.json`, {
-      method: 'DELETE',
-    }).then(res => res.json())
-      .then((response) => {
-        // setLoading(false)
-        // console.log("del re", response)
-        // let updatedIngredients = ingredients.filter(ing => ing.id !== id);
-        // setIngredients(updatedIngredients)
+    sendRequest(`https://react-hooks-8f150.firebaseio.com/ingredients/${id}.json`, 'DELETE', null, "REMOVE_ING", id)
+  }, [sendRequest])
 
-        dispatchHttp({
-          type: 'SUCCESS',
-        })
-        dispatchIngredients({
-          type: 'DELETE',
-          ingredientsId: id
-        })
-      }).catch(error => {
-        console.log("error", error)
-        // setLoading(false)
-        // setError(error.message)
-        dispatchHttp({
-          type: 'FAIL',
-          error: error.message
-        })
-      })
 
-  }, [])
 
+  //-----------
   const filterIngredients = useCallback((ingredients) => {
 
     // setIngredients(ingredients)
@@ -153,19 +189,19 @@ function Ingredients() {
     })
   }, [])
 
+  //   const clearError = useCallback(() => {
+  // return false
+  //   }, [])
   const clearError = useCallback(() => {
-    //setError(null)
-    dispatchHttp({
-      type: 'SUCCESS',
-    })
+    clear()
   }, [])
 
   const ingredientList = useMemo(() => {
-   return <IngredintsList ingredients={ingredients} onRemoveItem={(id) => onRemoveItem(id)} />
+    return <IngredintsList ingredients={ingredients} onRemoveItem={(id) => onRemoveItem(id)} />
   }, [ingredients, onRemoveItem])
   return (
     <div className="App">
-      <IngredientForm addIngredients={addIngredients} loading={httpState.loading} />
+      <IngredientForm addIngredients={addIngredients} loading={loading} />
 
       <section>
         <Search onLoadIngredients={filterIngredients} />
@@ -173,7 +209,7 @@ function Ingredients() {
       </section>
       {/* <IngredintsList ingredients={ingredients} onRemoveItem={(id) => onRemoveItem(id)} /> */}
       {ingredientList}
-      {httpState.error && <ErrorModal onClose={clearError}>{httpState.error}</ErrorModal>}
+      {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
     </div>
   );
 }
