@@ -1,7 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-
+import AuthenticationProvider from './context/auth-context'
 import './index.css';
 import App from './App';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(
+    <AuthenticationProvider>
+        <App />
+    </AuthenticationProvider>,
+    document.getElementById('root'));
